@@ -1,19 +1,13 @@
 defmodule Day07 do
   import AOC
 
-  defp equation_balances?(target, [l]), do: target == l
+  defp equation_balances?(target, _, curr, []), do: target == curr
 
-  defp equation_balances?(target, [head | tail]) do
-    (target - head > 0 && equation_balances?(target - head, tail)) ||
-      (rem(target, head) == 0 && equation_balances?(div(target, head), tail))
+  defp equation_balances?(target, ops, curr, [head | tail]) do
+    Enum.any?(ops, &equation_balances?(target, ops, &1.(curr, head), tail))
   end
 
-  defp equation_balances2?(target, curr, []), do: target == curr
-
-  defp equation_balances2?(target, curr, [head | tail]) do
-  end
-
-  defp p1(inp) do
+  defp parse_inp(inp) do
     inp
     |> String.trim("\n")
     |> String.split("\n")
@@ -25,34 +19,32 @@ defmodule Day07 do
         |> String.trim(" ")
         |> String.split(" ")
         |> Enum.map(&String.to_integer/1)
-        |> Enum.reverse()
 
       {String.to_integer(target_string), nums}
     end)
-    |> Enum.filter(fn {target, nums} ->
-      equation_balances?(target, nums)
+  end
+
+  defp p1(inp) do
+    ops = [&Kernel.+/2, &Kernel.*/2]
+
+    parse_inp(inp)
+    |> Enum.filter(fn {target, [head | tail]} ->
+      equation_balances?(target, ops, head, tail)
     end)
     |> Enum.map(fn {target, _} -> target end)
     |> Enum.sum()
   end
 
   defp p2(inp) do
-    inp
-    |> String.trim("\n")
-    |> String.split("\n")
-    |> Enum.map(fn equation_string ->
-      [target_string, right_string] = String.split(equation_string, ":", parts: 2)
+    ops = [
+      &Kernel.+/2,
+      &Kernel.*/2,
+      &String.to_integer(to_string(&1) <> to_string(&2))
+    ]
 
-      nums =
-        right_string
-        |> String.trim(" ")
-        |> String.split(" ")
-        |> Enum.map(&String.to_integer/1)
-
-      {String.to_integer(target_string), nums}
-    end)
+    parse_inp(inp)
     |> Enum.filter(fn {target, [head | tail]} ->
-      equation_balances2?(target, head, tail)
+      equation_balances?(target, ops, head, tail)
     end)
     |> Enum.map(fn {target, _} -> target end)
     |> Enum.sum()
