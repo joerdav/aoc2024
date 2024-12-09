@@ -4,7 +4,8 @@ defmodule Day07 do
   defp equation_balances?(target, _, curr, []), do: target == curr
 
   defp equation_balances?(target, ops, curr, [head | tail]) do
-    Enum.any?(ops, &equation_balances?(target, ops, &1.(curr, head), tail))
+    curr < target &&
+      Enum.any?(ops, &equation_balances?(target, ops, &1.(curr, head), tail))
   end
 
   defp parse_inp(inp) do
